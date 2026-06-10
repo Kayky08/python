@@ -1,28 +1,59 @@
 from pptx import Presentation
 import copy
+import sys
 
 # ─── DADOS DO COLABORADOR ─────────────────────────────────────────────────────
 print("=== Gerador de Onboarding ===\n")
 
-NOME    = input("Nome completo: ")
-USUARIO = input("Usuário: ")
-SENHA   = input("Senha: ")
-
-print("\nDefina os acessos (s = sim / n = não):\n")
+#print("Defina os acessos (s = sim / n = não):\n")
 
 def perguntar(acesso):
-    return input(f"  {acesso}? (s/n): ").strip().lower() == "s"
+   return input(f"  {acesso}? (s/n): ").strip().lower() == "s"
 
 # A ordem aqui define a prioridade de preenchimento dos slides
 ACESSOS = {
     "Rede":      perguntar("Rede"),
-    "Fluig":     perguntar("Fluig"),
     "Office365": perguntar("Office365"),
+    "Fluig":     perguntar("Fluig"),
     "Protheus":  perguntar("Protheus"),
     "Edata":     perguntar("Edata"),
     "SAG":       perguntar("SAG"),
     "PowerBI":   perguntar("Power BI"),
 }
+
+#---------------Placeholder----------------- 
+# ACESSOS = {
+#     "Rede":      "s",
+#     "Office365": "s",
+#     "Fluig":     "s",
+#     "Protheus":  "s",
+#     "Edata":     "s",
+#     "SAG":       "s",
+#     "PowerBI":   "s",
+# }
+#---------------Placeholder----------------- 
+
+#print("\nDefina as informações:\n")
+
+# NOME    = input("Nome completo: ")
+# USUARIO = input("Usuário: ")
+# SENHA   = input("Senha: ")
+# USUARIO_EDATA = ""
+# USUARIO_SAG = ""
+
+#---------------Placeholder----------------- 
+NOME    = "João da Silva"
+USUARIO = "joao.silva"
+SENHA   = "Comer@312!"
+USUARIO_EDATA = "sjoao"
+USUARIO_SAG = "joaosilva"
+#---------------Placeholder----------------- 
+
+# if ACESSOS["Edata"]:
+#     USUARIO_EDATA = input("Usuário EDATA: ")
+
+# if ACESSOS["SAG"]:
+#     USUARIO_SAG = input("Usuário SAG: ")
 
 # ─── DEFINIÇÃO DE CADA ACESSO ─────────────────────────────────────────────────
 # texto_shape : nome do shape de texto no template
@@ -33,53 +64,55 @@ ACESSOS = {
 DEFINICAO_ACESSOS = {
     "Rede": {
         "slide_origem": 3,
-        "texto_shape":  "CaixaDeTexto 6",
-        "imagens": [],
+        "texto_shape":  "ct_rede",
+        "imagens": [
+            {"nome": "img_rede", "offset": -360000, "left": 9700000, "w": 1300000,  "h": 1800000},
+        ],
     },
     "Office365": {
         "slide_origem": 3,
-        "texto_shape":  "CaixaDeTexto 9",
+        "texto_shape":  "ct_office",
         "imagens": [
-            {"nome": "object 6", "offset": 537266, "left": 9924765, "w": 896873,  "h": 807276},
+            {"nome": "img_office", "offset": 540000, "left": 9900000, "w": 900000,  "h": 810000},
         ],
     },
     "Fluig": {
         "slide_origem": 3,
-        "texto_shape":  "object 5",
+        "texto_shape":  "ct_fluig",
         "imagens": [
-            {"nome": "object 4", "offset": 486329, "left": 9704070, "w": 1098803, "h": 516635},
+            {"nome": "img_fluig", "offset": 490000, "left": 9700000, "w": 1100000, "h": 520000},
         ],
     },
     "Protheus": {
         "slide_origem": 4,
-        "texto_shape":  "CaixaDeTexto 17",
+        "texto_shape":  "ct_protheus",
         "imagens": [
-            {"nome": "Imagem 16", "offset": -395287, "left": 9412930,  "w": 714375, "h": 752475},
-            {"nome": "Imagem 9",  "offset": -357187, "left": 10550541, "w": 752475, "h": 714375},
-            {"nome": "Imagem 13", "offset":  428252, "left": 9972893,  "w": 771525, "h": 742950},
+            {"nome": "img_protheus1", "offset": -400000, "left": 9400000,  "w": 710000, "h": 750000},
+            {"nome": "img_protheus2",  "offset": -360000, "left": 10600000, "w": 750000, "h": 710000},
+            {"nome": "img_protheus3", "offset":  430000, "left": 10000000,  "w": 770000, "h": 740000},
         ],
     },
     "Edata": {
         "slide_origem": 4,
-        "texto_shape":  "CaixaDeTexto 18",
+        "texto_shape":  "ct_edata",
         "imagens": [
-            {"nome": "Imagem 8",  "offset": -65836, "left": 10591686, "w": 711330, "h": 731948},
-            {"nome": "Imagem 10", "offset": -61635, "left": 9513846,  "w": 821837, "h": 731949},
+            {"nome": "img_edata1", "offset": -66000, "left": 10600000, "w": 710000, "h": 730000},
+            {"nome": "img_edata2", "offset": -66000, "left": 9500000,  "w": 820000, "h": 730000},
+            {"nome": "img_edata3", "offset": 730000, "left": 9970000,  "w": 820000, "h": 730000},
         ],
     },
     "SAG": {
         "slide_origem": 4,
-        "texto_shape":  "object 5",
+        "texto_shape":  "ct_sag",
         "imagens": [
-            {"nome": "Imagem 12", "offset": -648642, "left": 10045653, "w": 821837, "h": 769657},
-            {"nome": "Imagem 14", "offset":  451877, "left": 9940482,  "w": 679896, "h": 945942},
+            {"nome": "img_sag", "offset": 500000, "left": 9900000, "w": 680000, "h": 920000},
         ],
     },
     "PowerBI": {
         "slide_origem": 5,
-        "texto_shape":  "object 5",
+        "texto_shape":  "ct_bi",
         "imagens": [
-            {"nome": "Imagem 5", "offset": 0, "left": 9727692, "w": 1473708, "h": 1873896},
+            {"nome": "img_bi", "offset": 0, "left": 9700000, "w": 1500000, "h": 1900000},
         ],
     },
 }
@@ -93,16 +126,24 @@ ESPACO_ENTRE_BLOCOS  = 200000    # espaço entre blocos consecutivos (em EMU)
 
 # ─── FUNÇÕES AUXILIARES ───────────────────────────────────────────────────────
 
-def substituir_texto(slide, usuario, senha, nome):
+def substituir_texto(slide, usuario, senha, nome, usuario_edata = "", usuario_sag = ""):
     for shape in slide.shapes:
         if not shape.has_text_frame:
             continue
         for para in shape.text_frame.paragraphs:
             for run in para.runs:
-                run.text = (run.text
-                    .replace("{{USUARIO}}", usuario)
-                    .replace("{{SENHA}}", senha)
-                    .replace("{{NOME}}", nome))
+                if ACESSOS["Edata"] or ACESSOS["SAG"]:
+                    run.text = (run.text
+                        .replace("{{USUARIO}}", usuario)
+                        .replace("{{SENHA}}", senha)
+                        .replace("{{NOME}}", nome)
+                        .replace("{{USUARIO_EDATA}}", usuario_edata)
+                        .replace("{{USUARIO_SAG}}", usuario_sag))
+                else:
+                    run.text = (run.text
+                        .replace("{{USUARIO}}", usuario)
+                        .replace("{{SENHA}}", senha)
+                        .replace("{{NOME}}", nome))
 
 
 def remover_shape_por_nome(slide, nome):
@@ -230,7 +271,11 @@ prs_ref = Presentation("template_onboarding.pptx")
 prs     = Presentation("template_onboarding.pptx")
 
 # Slide 1 — nome
-substituir_texto(prs.slides[0], USUARIO, SENHA, NOME)
+if ACESSOS["Edata"] or ACESSOS["SAG"]:
+    substituir_texto(prs.slides[0], USUARIO, SENHA, NOME, USUARIO_EDATA, USUARIO_SAG)
+else:
+    substituir_texto(prs.slides[0], USUARIO, SENHA, NOME)
+    
 print("\n✓ Slide 1: nome preenchido")
 
 # Slides de acesso (índices 3, 4, 5 no template = slides 4, 5, 6)
@@ -262,7 +307,7 @@ for g_idx, grupo in enumerate(grupos):
                 break
         print(f"  ✓ '{acesso}' posicionado")
 
-    substituir_texto(slide, USUARIO, SENHA, NOME)
+    substituir_texto(slide, USUARIO, SENHA, NOME, USUARIO_EDATA, USUARIO_SAG)
 
 # Remove slides de acesso que sobraram (de trás pra frente)
 slides_para_remover = slides_acesso_template[slides_necessarios:]
@@ -271,7 +316,7 @@ for idx in sorted(slides_para_remover, reverse=True):
     print(f"\n✗ Slide {idx + 1} removido (não necessário)")
 
 # Salva
-nome_arquivo = f"Onboarding_{NOME}.pptx"
+nome_arquivo = f"Onboarding - {NOME}.pptx"
 prs.save(nome_arquivo)
 
 print(f"\n{'='*40}")
