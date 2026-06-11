@@ -1,5 +1,4 @@
 from pptx import Presentation
-from pathlib import Path
 from pptx.util import Emu
 from lxml import etree
 import comtypes.client
@@ -11,29 +10,20 @@ import io
 import shutil
 
 # ─── DADOS DO COLABORADOR ─────────────────────────────────────────────────────
-print("=== Gerador de Onboarding ===\n")
+# print("=== Gerador de Onboarding ===\n")
 
-def perguntar(acesso):
-    return input(f"  {acesso}? (s/n): ").strip().lower() == "s"
+# def perguntar(acesso):
+#     return input(f"  {acesso}? (s/n): ").strip().lower() == "s"
 
-def checar_acesso(acesso_pai, acesso_filho):
-    if acesso_pai: 
-        return perguntar(acesso_filho) 
-    else: 
-        return False
-
-# ACESSOS_PAI = {
+# ACESSOS = {
 #     "Rede":      perguntar("Rede"),
 #     "Office365": perguntar("Office365"),
+#     "Fluig":     perguntar("Fluig"),
 #     "Protheus":  perguntar("Protheus"),
 #     "Edata":     perguntar("Edata"),
 #     "SAG":       perguntar("SAG"),
+#     "PowerBI":   perguntar("Power BI"),
 #     "WMW":       perguntar("WMW"),
-# }
-
-# ACESSOS_FILHO = {
-#     "Fluig":    checar_acesso(ACESSOS_PAI["Rede"],"Fluig"),
-#     "PowerBI":  checar_acesso(ACESSOS_PAI["Office365"], "Power BI")
 # }
 
 # print("\nDefina as informações:\n")
@@ -41,23 +31,20 @@ def checar_acesso(acesso_pai, acesso_filho):
 # NOME          = input("Nome completo: ")
 # USUARIO       = input("Usuário: ")
 # SENHA         = input("Senha: ")
-# USUARIO_EDATA = input("Usuário EDATA: ") if ACESSOS_PAI["Edata"] else ""
-# USUARIO_SAG   = input("Usuário SAG: ")   if ACESSOS_PAI["SAG"]   else ""
-# USUARIO_WMW   = input("Usuário WMW: ")   if ACESSOS_PAI["WMW"]   else ""
+# USUARIO_EDATA = input("Usuário EDATA: ") if ACESSOS["Edata"] else ""
+# USUARIO_SAG   = input("Usuário SAG: ")   if ACESSOS["SAG"]   else ""
+# USUARIO_WMW   = input("Usuário WMW: ")   if ACESSOS["WMW"]   else ""
 
 #---------------Teste----------------- 
-ACESSOS_PAI = {
+ACESSOS = {
     "Rede":      "s",
     "Office365": "s",
+    "Fluig":     "s",
     "Protheus":  "s",
     "Edata":     "s",
     "SAG":       "n",
+    "PowerBI":   "n",
     "WMW":       "n"
-}
-
-ACESSOS_FILHO = {
-    "Fluig":    "s",
-    "PowerBI":  "n"
 }
 
 NOME    = "Emelly Nachbal"
@@ -136,6 +123,7 @@ CAPACIDADE_POR_SLIDE = 3
 TOPO_INICIAL         = 1496968
 ESPACO_ENTRE_BLOCOS  = 200000
 
+
 # ─── FUNÇÕES ──────────────────────────────────────────────────────────────────
 
 def substituir_texto(slide, usuario, senha, nome, usuario_edata="", usuario_sag="", usuario_wmw = ""):
@@ -152,8 +140,10 @@ def substituir_texto(slide, usuario, senha, nome, usuario_edata="", usuario_sag=
                     .replace("{{USUARIO_SAG}}", usuario_sag)
                     .replace("{{USUARIO_WMW}}", usuario_wmw))
 
+
 def remover_slide(prs, indice):
     prs.slides._sldIdLst.remove(prs.slides._sldIdLst[indice])
+
 
 def limpar_slide_de_acessos(slide):
     """Remove todos os shapes de acesso, mantendo só cabeçalho e barra."""
@@ -165,6 +155,7 @@ def limpar_slide_de_acessos(slide):
     ]
     for el in para_remover:
         sp_tree.remove(el)
+
 
 def copiar_shape_com_imagem(shape_origem, slide_origem, slide_destino):
     """
@@ -216,6 +207,7 @@ def copiar_shape_com_imagem(shape_origem, slide_origem, slide_destino):
     # 5. Insere o shape no slide de destino
     slide_destino.shapes._spTree.append(novo_elemento)
 
+
 def adicionar_acesso_ao_slide(slide_destino, acesso_nome, novo_topo, prs_ref, definicao):
     """Copia texto + imagens do acesso para o slide de destino, já posicionados."""
     slide_origem = prs_ref.slides[definicao["slide_origem"]]
@@ -249,9 +241,10 @@ def adicionar_acesso_ao_slide(slide_destino, acesso_nome, novo_topo, prs_ref, de
                 s.height = img_def["h"]
                 break
 
+
 # ─── LÓGICA PRINCIPAL ─────────────────────────────────────────────────────────
 
-ativos = [nome for nome, tem in ACESSOS_PAI.items() if tem]
+ativos = [nome for nome, tem in ACESSOS.items() if tem]
 
 print(f"\nGerando onboarding para: {NOME}")
 print(f"Acessos ativos ({len(ativos)}): {', '.join(ativos)}")
@@ -318,15 +311,6 @@ deck = powerpoint.Presentations.Open(caminho_pptx)
 deck.SaveAs(caminho_pdf, 32)
 deck.Close()
 powerpoint.Quit()
-
-#---------Teste---------------
-diretorio = Path("ONBOARDING")
-
-for caminho in diretorio.iterdir():
-    if caminho.name == nome_arquivo:
-        print("São iguais")
-        sys.exit()
-#---------Teste---------------
 
 shutil.move(caminho_pdf,"ONBOARDING")
 os.remove(caminho_pptx)

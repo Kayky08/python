@@ -19,6 +19,7 @@ ACESSOS = {
     "Edata":     perguntar("Edata"),
     "SAG":       perguntar("SAG"),
     "PowerBI":   perguntar("Power BI"),
+    "WMW":       perguntar("WMW")
 }
 
 #---------------Placeholder----------------- 
@@ -66,54 +67,59 @@ DEFINICAO_ACESSOS = {
         "slide_origem": 3,
         "texto_shape":  "ct_rede",
         "imagens": [
-            {"nome": "img_rede", "offset": -360000, "left": 9700000, "w": 1300000,  "h": 1800000},
+            {"nome": "img_rede", "offset": -482429, "left": 9704070, "w": 1338263, "h": 1765194},  # era -360000
         ],
     },
     "Office365": {
         "slide_origem": 3,
         "texto_shape":  "ct_office",
         "imagens": [
-            {"nome": "img_office", "offset": 540000, "left": 9900000, "w": 900000,  "h": 810000},
+            {"nome": "img_office", "offset": 537266, "left": 9924765, "w": 896873, "h": 807276},
         ],
     },
     "Fluig": {
         "slide_origem": 3,
         "texto_shape":  "ct_fluig",
         "imagens": [
-            {"nome": "img_fluig", "offset": 490000, "left": 9700000, "w": 1100000, "h": 520000},
+            {"nome": "img_fluig", "offset": 486329, "left": 9704070, "w": 1098803, "h": 516635},
         ],
     },
     "Protheus": {
         "slide_origem": 4,
         "texto_shape":  "ct_protheus",
         "imagens": [
-            {"nome": "img_protheus1", "offset": -400000, "left": 9400000,  "w": 710000, "h": 750000},
-            {"nome": "img_protheus2",  "offset": -360000, "left": 10600000, "w": 750000, "h": 710000},
-            {"nome": "img_protheus3", "offset":  430000, "left": 10000000,  "w": 770000, "h": 740000},
+            {"nome": "img_protheus1", "offset": -395287, "left": 9412930,  "w": 714375, "h": 752475},
+            {"nome": "img_protheus2", "offset":  428252, "left": 9972893,  "w": 771525, "h": 742950},
+            {"nome": "img_protheus3", "offset": -357187, "left": 10550541, "w": 752475, "h": 714375},
         ],
     },
     "Edata": {
         "slide_origem": 4,
         "texto_shape":  "ct_edata",
         "imagens": [
-            {"nome": "img_edata1", "offset": -66000, "left": 10600000, "w": 710000, "h": 730000},
-            {"nome": "img_edata2", "offset": -66000, "left": 9500000,  "w": 820000, "h": 730000},
-            {"nome": "img_edata3", "offset": 730000, "left": 9970000,  "w": 820000, "h": 730000},
+            {"nome": "img_edata1", "offset":  835149, "left": 10045653, "w": 821837, "h": 769657},  # era -66000
+            {"nome": "img_edata2", "offset":  -61635, "left": 9513846,  "w": 821837, "h": 731949},
+            {"nome": "img_edata3", "offset":  -65836, "left": 10591686, "w": 711330, "h": 731948},
         ],
     },
     "SAG": {
         "slide_origem": 4,
         "texto_shape":  "ct_sag",
         "imagens": [
-            {"nome": "img_sag", "offset": 500000, "left": 9900000, "w": 680000, "h": 920000},
+            {"nome": "img_sag", "offset": 451877, "left": 9940482, "w": 679896, "h": 945942},
         ],
     },
     "PowerBI": {
         "slide_origem": 5,
         "texto_shape":  "ct_bi",
         "imagens": [
-            {"nome": "img_bi", "offset": 0, "left": 9700000, "w": 1500000, "h": 1900000},
+            {"nome": "img_bi", "offset": -226036, "left": 9727692, "w": 1473708, "h": 1873896},  # era 0
         ],
+    },
+    "WMW": {
+        "slide_origem": 5,
+        "texto_shape":  "ct_wmw",
+        "imagens": [],
     },
 }
 
