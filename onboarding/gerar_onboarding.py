@@ -14,7 +14,26 @@ import shutil
 print("=== Gerador de Onboarding ===\n")
 
 def perguntar(acesso):
-    return input(f"  {acesso}? (s/n): ").strip().lower() == "s"
+    pergunta = ""
+
+    while pergunta != "s" and pergunta != "n":
+        pergunta = input(f"  {acesso}? (s/n): ").strip().lower()
+
+        if pergunta != "s" and pergunta != "n":
+            print('Por favor usar "s" ou "n"')
+    
+    return pergunta == "s"
+
+def checar_acesos(acesso):
+    entrada = ""
+
+    while entrada != "":
+        entrada = input(f"{acesso}: ") 
+
+        if entrada == "":
+            print(f'Por favor digitar corretamente o acesso: {acesso}')
+    
+    return entrada
 
 def checar_acesso(acesso_pai, acesso_filho):
     if acesso_pai: 
@@ -22,51 +41,28 @@ def checar_acesso(acesso_pai, acesso_filho):
     else: 
         return False
 
-# ACESSOS_PAI = {
-#     "Rede":      perguntar("Rede"),
-#     "Office365": perguntar("Office365"),
-#     "Protheus":  perguntar("Protheus"),
-#     "Edata":     perguntar("Edata"),
-#     "SAG":       perguntar("SAG"),
-#     "WMW":       perguntar("WMW"),
-# }
-
-# ACESSOS_FILHO = {
-#     "Fluig":    checar_acesso(ACESSOS_PAI["Rede"],"Fluig"),
-#     "PowerBI":  checar_acesso(ACESSOS_PAI["Office365"], "Power BI")
-# }
-
-# print("\nDefina as informações:\n")
-
-# NOME          = input("Nome completo: ")
-# USUARIO       = input("Usuário: ")
-# SENHA         = input("Senha: ")
-# USUARIO_EDATA = input("Usuário EDATA: ") if ACESSOS_PAI["Edata"] else ""
-# USUARIO_SAG   = input("Usuário SAG: ")   if ACESSOS_PAI["SAG"]   else ""
-# USUARIO_WMW   = input("Usuário WMW: ")   if ACESSOS_PAI["WMW"]   else ""
-
-#---------------Teste----------------- 
 ACESSOS_PAI = {
-    "Rede":      "s",
-    "Office365": "s",
-    "Protheus":  "s",
-    "Edata":     "s",
-    "SAG":       "n",
-    "WMW":       "n"
+    "Rede":      perguntar("Rede"),
+    "Office365": perguntar("Office365"),
+    "Protheus":  perguntar("Protheus"),
+    "Edata":     perguntar("Edata"),
+    "SAG":       perguntar("SAG"),
+    "WMW":       perguntar("WMW"),
 }
 
 ACESSOS_FILHO = {
-    "Fluig":    "s",
-    "PowerBI":  "n"
+    "Fluig":    checar_acesso(ACESSOS_PAI["Rede"],"Fluig"),
+    "PowerBI":  checar_acesso(ACESSOS_PAI["Office365"], "Power BI")
 }
 
-NOME    = "Emelly Nachbal"
-USUARIO = "emelly.nachbal"
-SENHA   = "Qual@312!"
-USUARIO_EDATA = "nemelly"
-USUARIO_SAG = "emellynachbal"
-USUARIO_WMW   = "000842"
-#---------------Teste----------------- 
+print("\nDefina as informações:\n")
+
+NOME          = checar_acesos("Nome Completo")
+USUARIO       = input("Usuário (Ex: joao.silva): ")
+SENHA         = input("Senha: ")
+USUARIO_EDATA = input("Usuário EDATA: ") if ACESSOS_PAI["Edata"] else ""
+USUARIO_SAG   = input("Usuário SAG: ")   if ACESSOS_PAI["SAG"]   else ""
+USUARIO_WMW   = input("Usuário WMW: ")   if ACESSOS_PAI["WMW"]   else ""
 
 # ─── DEFINIÇÃO DE CADA ACESSO ─────────────────────────────────────────────────
 DEFINICAO_ACESSOS = {
@@ -251,7 +247,11 @@ def adicionar_acesso_ao_slide(slide_destino, acesso_nome, novo_topo, prs_ref, de
 
 # ─── LÓGICA PRINCIPAL ─────────────────────────────────────────────────────────
 
-ativos = [nome for nome, tem in ACESSOS_PAI.items() if tem]
+# depois
+ORDEM_ACESSOS = ["Rede", "Office365", "Fluig", "Protheus", "Edata", "SAG", "PowerBI", "WMW"]
+
+todos_acessos = {**ACESSOS_PAI, **ACESSOS_FILHO}
+ativos = [nome for nome in ORDEM_ACESSOS if todos_acessos.get(nome)]
 
 print(f"\nGerando onboarding para: {NOME}")
 print(f"Acessos ativos ({len(ativos)}): {', '.join(ativos)}")
@@ -319,14 +319,15 @@ deck.SaveAs(caminho_pdf, 32)
 deck.Close()
 powerpoint.Quit()
 
-#---------Teste---------------
 diretorio = Path("ONBOARDING")
 
+if not os.path.exists(diretorio):
+    os.mkdir('ONBOARDING')
+
 for caminho in diretorio.iterdir():
-    if caminho.name == nome_arquivo:
-        print("São iguais")
-        sys.exit()
-#---------Teste---------------
+    if caminho.name == f"Onboarding - {NOME}.pdf":
+        caminho_velho = os.path.abspath(f"ONBOARDING\{caminho.name}")
+        os.remove(caminho_velho)
 
 shutil.move(caminho_pdf,"ONBOARDING")
 os.remove(caminho_pptx)

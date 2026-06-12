@@ -1,6 +1,7 @@
 from pathlib import Path
+import os
 
-diretorio = Path("ONBOARDING") # Diretório de trabalho atual
+diretorio = Path("teste")
 
-for caminho in diretorio.iterdir():
-    print(caminho.name)
+if not os.path.exists(diretorio):
+    os.mkdir('teste')
