@@ -1,14 +1,10 @@
-from pptx import Presentation
-from pathlib import Path
-from pptx.util import Emu
-from lxml import etree
-import comtypes.client
-from pathlib import Path
-import copy
-import sys
-import os
-import io
-import shutil
+from pptx import Presentation # Importa a classe "Presentation" da biblioteca "pptx"
+from pathlib import Path # Importa a classe "Path" da biblioteca "pathlib"
+import comtypes.client # Importa a biblioteca "comtypes.client"
+import copy # Importa a biblioteca "copy"
+import os # Importa a biblioteca "os"
+import io # Importa a biblioteca "io"
+import shutil # Importa a biblioteca "shutil"
 
 # ─── DADOS DO COLABORADOR ─────────────────────────────────────────────────────
 print("=== Gerador de Onboarding ===\n")
@@ -24,35 +20,34 @@ def perguntar(acesso):
     
     return pergunta == "s"
 
+def checar_acesos(acesso):
+    entrada = input(f"{acesso}: ") 
 
-def checar_acesso(acesso_pai, acesso_filho):
-    if acesso_pai: 
-        return perguntar(acesso_filho) 
-    else: 
-        return False
+    while entrada == "":
+        print(f'Por favor digitar corretamente o campo: {acesso}')
+        entrada = input(f"{acesso}: ")
+    
+    return entrada
 
-ACESSOS_PAI = {
+ACESSOS = {
     "Rede":      perguntar("Rede"),
     "Office365": perguntar("Office365"),
     "Protheus":  perguntar("Protheus"),
     "Edata":     perguntar("Edata"),
     "SAG":       perguntar("SAG"),
     "WMW":       perguntar("WMW"),
-}
-
-ACESSOS_FILHO = {
-    "Fluig":    checar_acesso(ACESSOS_PAI["Rede"],"Fluig"),
-    "PowerBI":  checar_acesso(ACESSOS_PAI["Office365"], "Power BI")
+    "Fluig":     perguntar("Fluig"),
+    "PowerBI":   perguntar("Power BI")
 }
 
 print("\nDefina as informações:\n")
 
-NOME          = input("Nome completo: ")
-USUARIO       = input("Usuário (Ex: joao.silva): ")
-SENHA         = input("Senha: ")
-USUARIO_EDATA = input("Usuário EDATA: ") if ACESSOS_PAI["Edata"] else ""
-USUARIO_SAG   = input("Usuário SAG: ")   if ACESSOS_PAI["SAG"]   else ""
-USUARIO_WMW   = input("Usuário WMW: ")   if ACESSOS_PAI["WMW"]   else ""
+NOME          = checar_acesos("Nome Completo")
+USUARIO       = checar_acesos("Usuário (Ex: joao.silva)")
+SENHA         = checar_acesos("Senha")
+USUARIO_EDATA = checar_acesos("Usuário EDATA") if ACESSOS["Edata"] else ""
+USUARIO_SAG   = checar_acesos("Usuário SAG")   if ACESSOS["SAG"]   else ""
+USUARIO_WMW   = checar_acesos("Usuário WMW")   if ACESSOS["WMW"]   else ""
 
 # ─── DEFINIÇÃO DE CADA ACESSO ─────────────────────────────────────────────────
 DEFINICAO_ACESSOS = {
@@ -240,8 +235,7 @@ def adicionar_acesso_ao_slide(slide_destino, acesso_nome, novo_topo, prs_ref, de
 # depois
 ORDEM_ACESSOS = ["Rede", "Office365", "Fluig", "Protheus", "Edata", "SAG", "PowerBI", "WMW"]
 
-todos_acessos = {**ACESSOS_PAI, **ACESSOS_FILHO}
-ativos = [nome for nome in ORDEM_ACESSOS if todos_acessos.get(nome)]
+ativos = [nome for nome in ORDEM_ACESSOS if ACESSOS.get(nome)]
 
 print(f"\nGerando onboarding para: {NOME}")
 print(f"Acessos ativos ({len(ativos)}): {', '.join(ativos)}")
@@ -310,6 +304,9 @@ deck.Close()
 powerpoint.Quit()
 
 diretorio = Path("ONBOARDING")
+
+if not os.path.exists(diretorio):
+    os.mkdir('ONBOARDING')
 
 for caminho in diretorio.iterdir():
     if caminho.name == f"Onboarding - {NOME}.pdf":
