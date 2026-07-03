@@ -32,6 +32,8 @@ def pegar_informacoes(ips):
 
             # Pega todos os IPs que deram erro de comunicação
             if error_indication:
+                print(f"{ip} -> {error_indication}")
+                sys.exit()
                 erros_comunicacao.append(ip)
                 continue
 
@@ -59,42 +61,48 @@ def pegar_informacoes(ips):
     # Retorna com as informações de impressoras e seus erros
     return impressoras, erros_comunicacao, erros_status
 
-# lista de IPs de todas as impressoras 
+# lista de IPs de todas as impressoras
+"""
 ips = [
-    "192.168.8.52",
-    "192.168.8.70",
-    "192.168.8.86",
-    "192.168.8.90",
     "192.168.8.109",
     "192.168.8.246",
+    "192.168.8.248",
     "192.168.8.186",
     "192.168.8.187",
-    "192.168.8.134",
+    "192.168.8.70",
     "192.168.8.136",
+    "192.168.8.134",
     "192.168.8.240",
+    "192.168.8.90",
     "192.168.8.141",
     "192.168.8.230",
+    "192.168.8.86",
     "192.168.8.231",
     "192.168.8.188",
     "192.168.8.247",
     "192.168.8.244",
     "192.168.8.252",
     "192.168.8.251",
+    "192.168.8.253",
+    "192.168.8.52",
     "192.168.8.119",
     "192.168.8.145",
     "192.168.8.243",
-    "192.168.8.248",
-    "192.168.8.253",
-    "192.168.7.79",
     "192.168.7.100",
     "192.168.7.101",
-    "192.168.7.103",
     "192.168.7.197",
-    "192.168.70.30",
+    "192.168.7.79",
+    "192.168.7.103",
     "192.168.70.31",
+    "192.168.70.30",
     "192.168.40.31",
-    "192.168.40.30",
-    "192.168.40.32"
+    "192.168.40.32",
+    "192.168.40.30"
+]
+"""
+
+ips = [
+    "192.168.8.230"
 ]
 
 # Criação da tabela do excel 
@@ -180,6 +188,13 @@ alinhar = Alignment(
 fonte = Font(
     name = "calibri",
     size = "12"
+)
+
+# Criando um estilo para a fonte
+fonte_cabecalho = Font(
+    name = "calibri",
+    size = "12",
+    bold = True
 )
 
 for linha in ws.iter_rows(min_row=2, max_row=qtd_lws, min_col=2, max_col=8):
