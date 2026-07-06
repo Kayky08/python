@@ -50,7 +50,7 @@ def update(produtos):
 
     for produto in produtos:
         if produto["id"] == id:
-            produto[campo] == campo_alt
+            produto[f"{campo}"] == campo_alt
 
             print("--------------------------")
             print(f"Codigo: {produto["id"]}")
@@ -65,8 +65,7 @@ def delete(produtos):
 
     for produto in produtos:
         if produto["id"] == id:
-
-            print("--------------------------")
+            print("")
             print(f"Codigo: {produto["id"]}")
             print(f"Descritivo: {produto["descritivo"]}")
             print(f"Quantidade: {produto["quantidade"]}")
