@@ -14,7 +14,7 @@ class Categoria(Base):
     id: Mapped[int] = mapped_column(primary_key = True)
     descritivo: Mapped[str] = mapped_column(String(100))
 
-    produto: Mapped[list["Produto"]] = relationship(
+    produtos: Mapped[list["Produto"]] = relationship(
         back_populates = "categoria"
     )
 
@@ -33,7 +33,7 @@ class Produto(Base):
     categoria: Mapped["Categoria"] = relationship(
         back_populates = "produtos"
     )
-    
+
 Base.metadata.create_all(engine)
 
 #----------------- Inserindo produtos -----------------
@@ -97,8 +97,9 @@ categoria = Categoria(descritivo = "Perifericos")
 
 session.add(categoria)
 session.commit()
+session.close()
 
-categorias = session.scalar(select(Categoria)).all()
+categorias = session.scalars(select(Categoria)).all()
 
 for categoria in categorias:
     print(categoria.descritivo)
