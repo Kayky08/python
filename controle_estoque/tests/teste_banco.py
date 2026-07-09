@@ -3,7 +3,6 @@ from sqlalchemy.orm import Mapped, DeclarativeBase, Session, mapped_column, rela
 import sys
 
 engine = create_engine("sqlite:///estoque.db")
-session = Session(engine)
 
 class Base(DeclarativeBase):
     pass
@@ -22,7 +21,7 @@ class Produto(Base):
     __tablename__ = "produtos"
 
     id: Mapped[int] = mapped_column(primary_key = True)
-    nome: Mapped[str] = mapped_column(String(100))
+    descritivo: Mapped[str] = mapped_column(String(100))
     quantidade: Mapped[int]
     preco: Mapped[float]
 
@@ -89,30 +88,83 @@ Base.metadata.create_all(engine)
 
 # print(f"Produto deletado: {produto_antigo}")
 
+#----------------- Criando uma Categoria e um Produto exibindo -----------------
+# with Session(engine) as session:
+#     categoria = Categoria(
+#         descritivo = "Equipamentos"
+#     )
 
-#-----------------#----------------- Fazendo operações com uma Tabela com chave Estrangeira -----------------#-----------------#
+#     session.add(categoria)
+#     session.commit()
 
-#----------------- Inserindo produtos -----------------
-categoria = Categoria(descritivo = "Perifericos")
+#     produto = Produto(
+#         descritivo = "Switch Ubiquiti",
+#         quantidade = 20,
+#         preco = 50.0,
+#         categoria_id = 2
+#     )
 
-session.add(categoria)
-session.commit()
-session.close()
+#     session.add(produto)
+#     session.commit()
 
-categorias = session.scalars(select(Categoria)).all()
+#     categorias = session.scalars(select(Categoria)).all()
 
-for categoria in categorias:
-    print(categoria.descritivo)
+#     print("----------------- Lista de Categorias -----------------")
+#     for categoria in categorias:
+#         print(categoria.descritivo)
 
-session.close()
+#     produtos = session.scalars(select(Produto)).all()
 
-#----------------- Consultando todos os Produtos -----------------
+#     print("\n----------------- Dados do Produto -----------------")
+#     for produto in produtos:
+#         categoria = session.scalar(
+#             select(Categoria).where(Categoria.id == produto.categoria_id)
+#         )
+        
+#         print(f"\nCodigo: {produto.id}")
+#         print(f"Descritivo: {produto.descritivo}")
+#         print(f"Quantidade: {produto.quantidade}")
+#         print(f"Categoria: {categoria.descritivo}")
+#         print(f"Preço: R$ {produto.preco:.2f}")
 
+#----------------- Alterando uma Categoria -----------------
 
-#----------------- Consultando um dos Produtos -----------------
+# with Session(engine) as session:
+#     categoria = session.get(Categoria, 1)
 
+#     categoria.descritivo = "Periféricos"
 
-#----------------- Atualizando um Produto -----------------
+#     session.commit()
 
+#     print(f"Categoria Alterada: {categoria.descritivo}")
 
-#----------------- Excluindo um Produto -----------------
+#     print("\n----------------- Dados do Produto -----------------")
+#     for produto in categoria.produtos:
+#         print(f"\nCodigo: {produto.id}")
+#         print(f"Descritivo: {produto.descritivo}")
+#         print(f"Quantidade: {produto.quantidade}")
+#         print(f"Categoria: {categoria.descritivo}")
+#         print(f"Preço: R$ {produto.preco:.2f}")
+
+#----------------- Deletando uma Categoria e excluindo seus Produtos -----------------
+
+# with Session(engine) as session:
+    # produtos_excluidos = []
+    # categoria_excluida = ""
+
+    # categoria = session.get(Categoria, 1)
+
+    # for produto in categoria.produtos:
+    #     produtos_excluidos.append(produto.descritivo)
+
+    #     session.delete(produto)
+
+    # categoria_excluida = categoria.descritivo
+
+    # session.delete(categoria)
+    # session.commit()
+
+    # print(f"Categoria '{categoria_excluida} deletada com sucesso, junto dos seguintes itens:\n'")
+
+    # for produtos in produtos_excluidos:
+    #     print(produto)

@@ -1,0 +1,9 @@
+[project]
+name = "controle-estoque"
+version = "0.1.0"
+description = "Sistema de controle de estoque"
+requires-python = ">=3.13"
+
+dependences = [
+    "sqlachemy",
+]
