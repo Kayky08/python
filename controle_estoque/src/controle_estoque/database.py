@@ -8,4 +8,4 @@ engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(bind = engine)
 
 def criar_banco():
-    Base.matadata.create_all(engine)
+    Base.metadata.create_all(engine)

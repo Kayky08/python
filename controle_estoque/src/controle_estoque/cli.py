@@ -1,6 +1,36 @@
 def iniciar():
     while True:
         print("\n=== CONTROLE DE ESTOQUE ===")
+        print("1 - Usuarios")
+        print("2 - Produtos")
+        print("3 - Categorias")
+        print("4 - Movimentações")
+        print("5 - Sair")
+
+        opcao = input("\nEscolha: ")
+
+        if opcao == "1":
+            interface_usuario()
+
+        elif opcao == "2":
+            interface_produto()
+
+        elif opcao == "3":
+            print("Buscar um Produto...")
+
+        elif opcao == "4":
+            print("Alterar um Produto...")
+        
+        elif opcao == "5":
+            print("Encerrando...")
+            break
+
+        else:
+            print("Opção inválida.")
+
+def interface_produto():
+    while True:
+        print("\n=== CONTROLE DE  ===")
         print("1 - Cadastrar produto")
         print("2 - Listar produtos")
         print("3 - Buscar um produto")
@@ -26,8 +56,40 @@ def iniciar():
             print("Deletar um Produto...")
         
         elif opcao == "6":
-            print("Encerrando...")
-            break
+            iniciar()
+
+        else:
+            print("Opção inválida.")
+
+def interface_usuario():
+    while True:
+        print("\n=== USUÁRIOS ===")
+        print("1 - Cadastrar usuário")
+        print("2 - Listar usuário")
+        print("3 - Buscar um usuário")
+        print("4 - Alterar usuário")
+        print("5 - Deletar um usuário")
+        print("6 - Sair")
+
+        opcao = input("\nEscolha: ")
+
+        if opcao == "1":
+            print("Cadastrar Usuário...")
+
+        elif opcao == "2":
+            print("Listar Usuário...")
+
+        elif opcao == "3":
+            print("Buscar um Usuário...")
+
+        elif opcao == "4":
+            print("Alterar um Usuário...")
+
+        elif opcao == "5":
+            print("Deletar um Usuário...")
+        
+        elif opcao == "6":
+            iniciar()
 
         else:
             print("Opção inválida.")
