@@ -1,16 +1,14 @@
-from sqlalchemy import String, Integer, Float, ForeignKey
+from sqlalchemy import String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from .base import Base
 
-class Produto(Base):
-    __tablename__ = "produtos"
+class Categoria(Base):
+    __tablename__ = "categorias"
 
-    id:         Mapped[int]   = mapped_column(primary_key = True)
-    descritivo: Mapped[str]   = mapped_column(String(100))
-    quantidade: Mapped[int]   = mapped_column(nullable = False)
-    preco:      Mapped[float] = mapped_column(nullable = False)
+    id: Mapped[int] = mapped_column(primary_key=True)
+    descritivo: Mapped[str] = mapped_column(String(100))
 
-    categoria_id: Mapped[int] = relationship(
-        ForeignKey("categorias.id")
+    produtos: Mapped[list["Produto"]] = relationship(
+        back_populates="categoria"
     )

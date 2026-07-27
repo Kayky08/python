@@ -1,3 +1,6 @@
+from controle_estoque.database import SessionLocal
+from controle_estoque.services.usuario_services import UsuarioService
+
 def iniciar():
     while True:
         print("\n=== CONTROLE DE ESTOQUE ===")
@@ -77,7 +80,7 @@ def interface_usuario():
             print("Cadastrar Usuário...")
 
         elif opcao == "2":
-            print("Listar Usuário...")
+            listar_usuarios()
 
         elif opcao == "3":
             print("Buscar um Usuário...")
@@ -93,3 +96,25 @@ def interface_usuario():
 
         else:
             print("Opção inválida.")
+
+#----------------------------------- Usuarios -----------------------------------
+
+def listar_usuarios():
+    session = SessionLocal()
+    service = UsuarioService()
+
+    try:
+        usuarios = service.listar_usuarios(session)
+
+        print("\n========= USUÁRIOS =========\n")
+        for usuario in usuarios:
+            print(f"Código : {usuario.id}")
+            print(f"Nome   : {usuario.nome}")
+            print(f"Login  : {usuario.login}")
+            print(f"Tipo   : {usuario.tipo.value}")
+
+    except ValueError as erro:
+        print(erro)
+
+    finally:
+        session.close()

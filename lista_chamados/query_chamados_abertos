@@ -1,0 +1,123 @@
+-- Fluig Poli
+
+SELECT CONVERT(VARCHAR,PW.NUM_PROCES) AS NUM_PROCES, -- 'No.Fluig',
+       1 AS Seq,
+
+       CONVERT(VARCHAR(10), PW.START_DATE, 120) AS DATA_TAREF,
+       CONVERT(VARCHAR, PW.START_DATE, 8) AS HORA_TAREF,
+
+       --INI.empresa AS Empresa, INI.area AS Area, INI.departamento AS Depto,
+
+       INI.empresa AS Empresa, INI.solicitante+' ('+INI.area+' / '+INI.departamento+')' AS Solicitante,'' AS Responsavel, '0 - Abertura service desk' AS nomeAtividade,
+       INI.descricao,
+       INI.telefone, INI.categoria, INI.problema, INI.criticidade,
+       INI.prazoHoras, INI.prazo,
+
+       CONVERT(VARCHAR(10), PW.DEADLINE_DATE, 120) AS DEADLINE_DATE,
+       CONVERT(VARCHAR, PW.DEADLINE_DATE, 8) AS DEADLINE_TIME,
+
+       ISNULL(CONVERT(VARCHAR(10), PW.END_DATE, 120), '') AS END_DATE,
+       ISNULL(CONVERT(VARCHAR, PW.END_DATE, 8), '') AS END_TIME,
+
+       PW.TOTAL_DEADLINE, PW.TOTAL_RUNTIME, PW.TOTAL_WARNING,
+       PW.NR_DOCUMENTO_CARD_INDEX, PW.NR_DOCUMENTO_CARD,
+
+       CONVERT(VARCHAR(19), PW.START_DATE, 120) AS START_DATE,
+
+       CASE WHEN  PW.TOTAL_RUNTIME > PW.TOTAL_DEADLINE THEN 'FORA' ELSE 'OK' END SLA,
+       CASE WHEN ISNULL(CONVERT(VARCHAR, PW.END_DATE, 8), '')='' THEN 'ABERTO' ELSE 'FECHADO' END STATUS_CHAMADO,
+
+       LEFT(CONVERT(VARCHAR, PW.START_DATE, 8),2) HR_TAREFA,
+
+       CASE WHEN CONVERT(INT, LEFT(CONVERT(VARCHAR, PW.START_DATE, 8),2)) BETWEEN 18 AND 23 
+            OR CONVERT(INT, LEFT(CONVERT(VARCHAR, PW.START_DATE, 8),2)) BETWEEN 0 AND 7 THEN 'NOTURNO' ELSE 'DEMAIS' END TURNO
+
+FROM FLUIG_POLI.dbo.PROCES_WORKFLOW PW  WITH (NOLOCK)
+INNER JOIN FLUIG_POLI.dbo.ML002029 INI  WITH (NOLOCK)
+        ON INI.companyid  = PW.COD_EMPRESA
+        AND INI.cardid     = PW.NR_DOCUMENTO_CARD_INDEX
+        AND INI.documentid = PW.NR_DOCUMENTO_CARD
+WHERE PW.COD_DEF_PROCES like 'SERVICEDESK%'
+AND ( CONVERT(DATE,PW.START_DATE)>='2026-01-01' --BETWEEN '2023-03-01' AND '2023-03-31'  --CHAMADOS ABERTOS NO MES                  
+AND ISNULL(CONVERT(VARCHAR, PW.END_DATE, 8), '')='')                  
+UNION ALL
+
+SELECT CONVERT(VARCHAR,PW.NUM_PROCES) NUM_PROCES, CONVERT(INT, SUP.movement) AS Seq,
+       CASE WHEN RTRIM(SUP.dtResponsavel) <> ''
+            THEN (CASE WHEN CHARINDEX('/', SUP.dtResponsavel) > 0
+                THEN RIGHT(SUP.dtResponsavel, 4)+'-'+SUBSTRING(SUP.dtResponsavel, 4, 2)+'-'+LEFT(SUP.dtResponsavel, 2)
+                  ELSE SUP.dtResponsavel
+                  END)
+       ELSE ''
+
+       END AS DATA_TAREF,
+
+       CASE WHEN SUP.horaResponsavel <> '' THEN SUP.horaResponsavel+':00'
+
+       ELSE ''
+
+       END AS HORA_TAREF,
+
+       --INI.empresa, INI.area, INI.departamento, INI.solicitante AS Solicitante,
+
+       INI.empresa, INI.solicitante+' ('+INI.area+' / '+INI.departamento+')' AS Solicitante,
+
+       SUP.nomeResponsavel AS Responsavel, SUP.nomeAtividade,
+
+       SUP.compResponsavel AS descricao,
+
+       INI.telefone, INI.categoria, INI.problema, INI.criticidade,
+
+       INI.prazoHoras, INI.prazo,
+
+       CONVERT(VARCHAR(10), PW.DEADLINE_DATE, 120) AS DEADLINE_DATE,                   
+       CONVERT(VARCHAR, PW.DEADLINE_DATE, 8) AS DEADLINE_TIME,                   
+
+       ISNULL(CONVERT(VARCHAR(10), PW.END_DATE, 120), '') AS END_DATE,                   
+       ISNULL(CONVERT(VARCHAR, PW.END_DATE, 8), '') AS END_TIME,                   
+
+       PW.TOTAL_DEADLINE, PW.TOTAL_RUNTIME, PW.TOTAL_WARNING,                   
+       PW.NR_DOCUMENTO_CARD_INDEX, PW.NR_DOCUMENTO_CARD,                   
+
+       CONVERT(VARCHAR(19), PW.START_DATE, 120) AS START_DATE,                  
+
+       CASE WHEN  PW.TOTAL_RUNTIME > PW.TOTAL_DEADLINE THEN 'FORA' ELSE 'OK' END SLA,                  
+       CASE WHEN ISNULL(CONVERT(VARCHAR, PW.END_DATE, 8), '')='' THEN 'ABERTO' ELSE 'FECHADO' END STATUS_CHAMADO,                
+
+       LEFT(CASE WHEN SUP.horaResponsavel <> '' THEN SUP.horaResponsavel+':00' ELSE '' END,2) HR_TAREFA,                
+
+       CASE WHEN CONVERT(INT, LEFT(CASE WHEN SUP.horaResponsavel <> '' THEN SUP.horaResponsavel+':00'                   
+
+                                   ELSE '' END,2)) BETWEEN 18 AND 23 
+
+              OR CONVERT(INT, LEFT(CASE WHEN SUP.horaResponsavel <> '' THEN SUP.horaResponsavel+':00'
+
+       ELSE ''
+
+       END,2)) BETWEEN 0 AND 7 THEN 'NOTURNO' ELSE 'DEMAIS' END TURNO                
+
+FROM FLUIG_POLI.dbo.PROCES_WORKFLOW PW   WITH (NOLOCK)                  
+
+INNER JOIN FLUIG_POLI.dbo.ML002029 INI   WITH (NOLOCK)                  
+
+        ON INI.companyid  = PW.COD_EMPRESA                   
+
+       AND INI.cardid     = PW.NR_DOCUMENTO_CARD_INDEX                   
+
+       AND INI.documentid = PW.NR_DOCUMENTO_CARD                   
+
+INNER JOIN FLUIG_POLI.dbo.ML002030 SUP   WITH (NOLOCK)                  
+
+        ON SUP.companyid  = PW.COD_EMPRESA                   
+
+       AND SUP.cardid     = PW.NR_DOCUMENTO_CARD_INDEX                   
+
+       AND SUP.documentid = PW.NR_DOCUMENTO_CARD                   
+
+WHERE PW.COD_DEF_PROCES like 'SERVICEDESK%'                   
+
+AND CONVERT(DATE,PW.START_DATE) >='2026-01-01' --BETWEEN '2023-03-01' AND '2023-03-31'  --CHAMADOS ABERTOS NO MES                  
+
+AND ISNULL(CONVERT(VARCHAR, PW.END_DATE, 8), '')=''
+
+ORDER BY 1, 2

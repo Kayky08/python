@@ -1,0 +1,162 @@
+-- Fluig Poli
+
+-- ===================================================================
+-- PARTE 1: Chamados na fase inicial (abertura), ainda sem movimentação
+-- ===================================================================
+
+SELECT 
+    CONVERT(VARCHAR, PW.NUM_PROCES) AS NUM_PROCES,            -- Número do processo/chamado no Fluig
+    1 AS Seq,                                                 -- Sequência fixa = 1 (é a primeira etapa)
+    CONVERT(VARCHAR(10), PW.START_DATE, 120) AS DATA_TAREF,   -- Data de início do processo (formato AAAA-MM-DD)
+    CONVERT(VARCHAR, PW.START_DATE, 8) AS HORA_TAREF,         -- Hora de início do processo (HH:MM:SS)
+
+    INI.empresa AS Empresa,
+    INI.solicitante + ' (' + INI.area + ' / ' + INI.departamento + ')' AS Solicitante,  -- Nome do solicitante + área/depto
+
+    '' AS Responsavel,                                         -- Ainda não há responsável (é a abertura)
+    '0 - Abertura service desk' AS nomeAtividade,              -- Nome fixo da atividade nesta etapa
+
+    INI.descricao,
+    INI.telefone,
+    INI.categoria,
+    INI.problema,
+    INI.criticidade,
+    INI.prazoHoras,
+    INI.prazo,
+
+    CONVERT(VARCHAR(10), PW.DEADLINE_DATE, 120) AS DEADLINE_DATE,   -- Data limite (SLA)
+    CONVERT(VARCHAR, PW.DEADLINE_DATE, 8) AS DEADLINE_TIME,         -- Hora limite (SLA)
+
+    ISNULL(CONVERT(VARCHAR(10), PW.END_DATE, 120), '') AS END_DATE, -- Data de encerramento (vazio se aberto)
+    ISNULL(CONVERT(VARCHAR, PW.END_DATE, 8), '') AS END_TIME,       -- Hora de encerramento (vazio se aberto)
+
+    PW.TOTAL_DEADLINE,      -- Prazo total (SLA) em alguma unidade (minutos/horas, depende do Fluig)
+    PW.TOTAL_RUNTIME,       -- Tempo total decorrido até agora
+    PW.TOTAL_WARNING,       -- Tempo de alerta/aviso configurado
+
+    PW.NR_DOCUMENTO_CARD_INDEX,  -- Chave do "card" (formulário) no Fluig
+    PW.NR_DOCUMENTO_CARD,        -- Chave do documento do card
+
+    CONVERT(VARCHAR(19), PW.START_DATE, 120) AS START_DATE,  -- Data/hora completa de início
+
+    -- SLA: compara tempo decorrido com o prazo definido
+    CASE WHEN PW.TOTAL_RUNTIME > PW.TOTAL_DEADLINE 
+         THEN 'FORA' 
+         ELSE 'OK' 
+    END AS SLA,
+
+    -- Status do chamado: se não tem data de fim, está aberto
+    CASE WHEN ISNULL(CONVERT(VARCHAR, PW.END_DATE, 8), '') = '' 
+         THEN 'ABERTO' 
+         ELSE 'FECHADO' 
+    END AS STATUS_CHAMADO,
+
+    LEFT(CONVERT(VARCHAR, PW.START_DATE, 8), 2) AS HR_TAREFA,  -- Extrai só a hora (2 dígitos) do horário de início
+
+    -- Classifica o turno com base na hora de início: 18h-23h ou 00h-07h = noturno
+    CASE WHEN CONVERT(INT, LEFT(CONVERT(VARCHAR, PW.START_DATE, 8), 2)) BETWEEN 18 AND 23
+           OR CONVERT(INT, LEFT(CONVERT(VARCHAR, PW.START_DATE, 8), 2)) BETWEEN 0 AND 7
+         THEN 'NOTURNO' 
+         ELSE 'DEMAIS' 
+    END AS TURNO
+
+FROM FLUIG_POLI.dbo.PROCES_WORKFLOW PW WITH (NOLOCK)   -- Tabela principal: processos de workflow (NOLOCK = leitura sem travar a tabela)
+
+INNER JOIN FLUIG_POLI.dbo.ML002029 INI WITH (NOLOCK)   -- Tabela do formulário de abertura do chamado (dados iniciais)
+    ON  INI.companyid  = PW.COD_EMPRESA
+    AND INI.cardid     = PW.NR_DOCUMENTO_CARD_INDEX
+    AND INI.documentid = PW.NR_DOCUMENTO_CARD
+
+WHERE PW.COD_DEF_PROCES LIKE 'SERVICEDESK%'          -- Filtra só processos do tipo Service Desk
+  AND (
+        CONVERT(DATE, PW.START_DATE) >= '2026-01-01'  -- A partir de 01/01/2026
+        AND ISNULL(CONVERT(VARCHAR, PW.END_DATE, 8), '') = ''  -- E que ainda estejam ABERTOS
+      )
+
+UNION ALL
+
+-- ===================================================================
+-- PARTE 2: Histórico de movimentações/atividades de cada chamado
+-- ===================================================================
+SELECT 
+    CONVERT(VARCHAR, PW.NUM_PROCES) AS NUM_PROCES,
+    CONVERT(INT, SUP.movement) AS Seq,     -- Sequência real da movimentação (2, 3, 4...)
+
+    -- Converte a data do responsável (pode vir em formato DD/MM/AAAA) para AAAA-MM-DD
+    CASE WHEN RTRIM(SUP.dtResponsavel) <> ''
+         THEN (
+                CASE WHEN CHARINDEX('/', SUP.dtResponsavel) > 0
+                     THEN RIGHT(SUP.dtResponsavel, 4) + '-' + SUBSTRING(SUP.dtResponsavel, 4, 2) + '-' + LEFT(SUP.dtResponsavel, 2)
+                     ELSE SUP.dtResponsavel
+                END
+              )
+         ELSE ''
+    END AS DATA_TAREF,
+
+    CASE WHEN SUP.horaResponsavel <> '' THEN SUP.horaResponsavel + ':00' ELSE '' END AS HORA_TAREF,
+
+    INI.empresa,
+    INI.solicitante + ' (' + INI.area + ' / ' + INI.departamento + ')' AS Solicitante,
+
+    SUP.nomeResponsavel AS Responsavel,     -- Quem executou essa etapa
+    SUP.nomeAtividade,                       -- Nome da atividade/etapa do workflow
+    SUP.compResponsavel AS descricao,        -- Comentário/observação do responsável
+
+    INI.telefone,
+    INI.categoria,
+    INI.problema,
+    INI.criticidade,
+    INI.prazoHoras,
+    INI.prazo,
+
+    CONVERT(VARCHAR(10), PW.DEADLINE_DATE, 120) AS DEADLINE_DATE,
+    CONVERT(VARCHAR, PW.DEADLINE_DATE, 8) AS DEADLINE_TIME,
+
+    ISNULL(CONVERT(VARCHAR(10), PW.END_DATE, 120), '') AS END_DATE,
+    ISNULL(CONVERT(VARCHAR, PW.END_DATE, 8), '') AS END_TIME,
+
+    PW.TOTAL_DEADLINE,
+    PW.TOTAL_RUNTIME,
+    PW.TOTAL_WARNING,
+
+    PW.NR_DOCUMENTO_CARD_INDEX,
+    PW.NR_DOCUMENTO_CARD,
+
+    CONVERT(VARCHAR(19), PW.START_DATE, 120) AS START_DATE,
+
+    CASE WHEN PW.TOTAL_RUNTIME > PW.TOTAL_DEADLINE 
+         THEN 'FORA' 
+         ELSE 'OK' 
+    END AS SLA,
+
+    CASE WHEN ISNULL(CONVERT(VARCHAR, PW.END_DATE, 8), '') = '' 
+         THEN 'ABERTO' 
+         ELSE 'FECHADO' 
+    END AS STATUS_CHAMADO,
+
+    -- Mesma lógica de turno, mas usando o horário do responsável (não o START_DATE)
+    LEFT(CASE WHEN SUP.horaResponsavel <> '' THEN SUP.horaResponsavel + ':00' ELSE '' END, 2) AS HR_TAREFA,
+
+    CASE WHEN CONVERT(INT, LEFT(CASE WHEN SUP.horaResponsavel <> '' THEN SUP.horaResponsavel + ':00' ELSE '' END, 2)) BETWEEN 18 AND 23
+           OR CONVERT(INT, LEFT(CASE WHEN SUP.horaResponsavel <> '' THEN SUP.horaResponsavel + ':00' ELSE '' END, 2)) BETWEEN 0 AND 7
+         THEN 'NOTURNO' 
+         ELSE 'DEMAIS' 
+    END AS TURNO
+
+FROM FLUIG_POLI.dbo.PROCES_WORKFLOW PW WITH (NOLOCK)
+
+INNER JOIN FLUIG_POLI.dbo.ML002029 INI WITH (NOLOCK)   -- Dados do formulário de abertura
+    ON  INI.companyid  = PW.COD_EMPRESA
+    AND INI.cardid     = PW.NR_DOCUMENTO_CARD_INDEX
+    AND INI.documentid = PW.NR_DOCUMENTO_CARD
+
+INNER JOIN FLUIG_POLI.dbo.ML002030 SUP WITH (NOLOCK)   -- Tabela de movimentações/etapas do workflow
+    ON  SUP.companyid  = PW.COD_EMPRESA
+    AND SUP.cardid     = PW.NR_DOCUMENTO_CARD_INDEX
+    AND SUP.documentid = PW.NR_DOCUMENTO_CARD
+
+WHERE PW.COD_DEF_PROCES LIKE 'SERVICEDESK%'
+  AND CONVERT(DATE, PW.START_DATE) >= '2026-01-01'
+  AND ISNULL(CONVERT(VARCHAR, PW.END_DATE, 8), '') = ''
+
+ORDER BY 1, 2;
