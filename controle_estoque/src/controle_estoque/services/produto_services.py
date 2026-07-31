@@ -1,6 +1,8 @@
+from controle_estoque.repositories.produto_repository import ProdutoRepository
+
 class ProdutoService:
 
-    def cadastrar_usuario():
+    def cadastrar_produto():
         pass
         # Validações:
             # Quantidade negativa?

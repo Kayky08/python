@@ -17,5 +17,5 @@ class UsuarioRepository:
     def atualizar(self, session, usuario):
         pass
 
-    def atualizar(self, session, usuario):
+    def deletar(self, session, usuario):
         pass
