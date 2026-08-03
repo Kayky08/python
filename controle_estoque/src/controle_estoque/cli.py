@@ -1,5 +1,7 @@
 from controle_estoque.database import SessionLocal
 from controle_estoque.services.usuario_services import UsuarioService
+from controle_estoque.services.produto_services import ProdutoService
+from controle_estoque.services.categoria_services import CategoriaService
 
 def iniciar():
     while True:
@@ -44,19 +46,19 @@ def interface_produto():
         opcao = input("\nEscolha: ")
 
         if opcao == "1":
-            print("Cadastrar Produtos...")
+            cadastrar_produto()
 
         elif opcao == "2":
-            print("Listar Produtos...")
+            listar_produtos()
 
         elif opcao == "3":
-            print("Buscar um Produto...")
+            buscar_produto()
 
         elif opcao == "4":
-            print("Alterar um Produto...")
+            alterar_produto()
 
         elif opcao == "5":
-            print("Deletar um Produto...")
+            deletar_produto()
         
         elif opcao == "6":
             iniciar()
@@ -98,7 +100,6 @@ def interface_usuario():
             print("Opção inválida.")
 
 #----------------------------------- Usuarios -----------------------------------
-
 def listar_usuarios():
     session = SessionLocal()
     service = UsuarioService()
@@ -112,6 +113,154 @@ def listar_usuarios():
             print(f"Nome   : {usuario.nome}")
             print(f"Login  : {usuario.login}")
             print(f"Tipo   : {usuario.tipo.value}")
+
+    except ValueError as erro:
+        print(erro)
+
+    finally:
+        session.close()
+
+#----------------------------------- Categoria -----------------------------------
+def cadastrar_categoria():
+    sessiom = SessionLocal()
+    service = CategoriaService()
+
+def listar_categoria():
+    pass
+
+def buscar_categoria():
+    pass
+
+def alterar_categoria():
+    pass
+
+def deletar_categoria():
+    pass
+
+#----------------------------------- Produtos -----------------------------------
+def cadastrar_produto():
+    session = SessionLocal()
+    # Abrindo uma conexão/sessão nova com o banco de dados
+    service = ProdutoService()
+    # Criando o service que vai aplicar as regras de negocio
+
+    try:
+        descritivo = input("Descrição: ")
+        quantidade = int(input("Quantidade: "))
+        preco = float(input("Preço: "))
+        categoria_id = int(input("Código da categoria: "))
+        # Pegando as informações do novo produto
+
+        produto = service.cadastrar_produto(
+            session,
+            descritivo,
+            quantidade,
+            preco,
+            categoria_id
+        )
+        # Delegando a parte de adição para o service lidar
+
+        print(f"\nProduto '{produto.descritivo}' cadastrado com o código {produto.id}")
+        # Retorna a mesagem de sucesso com o cadastro
+
+    except ValueError as erro:
+        print(erro)
+        # Retorna a mensagem de erro caso alguma das operações não seja concluida corretamente
+
+    finally:
+        session.close()
+        # Garante que a sessão é fechada no final se deu certo ou errado, evitando deixar as conexões abertas
+
+def listar_produtos():
+    session = SessionLocal()
+    # Criando a conexão/sessão com o banco de dados
+    service = ProdutoService()
+    # Criando o service que vai aplicar as regras de negocio
+
+    try:
+        produtos = service.listar_produto(session)
+        # Delegando para o service a aplicação das regras de negocio na função de listar
+
+        print("\n========= PRODUTOS =========\n")
+        for produto in produtos:
+            print(f"Código     : {produto.id}")
+            print(f"Descritivo : {produto.descritivo}")
+            print(f"Qunatidade : {produto.quantidade}")
+            print(f"Preço      : R$ {produto.preco:.2f}\n")
+        # Exibindo as informações do produto
+
+    except ValueError as erro:
+        print(erro)
+        # Retorna a mensagem de erro caso alguma das operações não seja concluida corretamente
+
+    finally:
+        session.close()
+        # Garante que a sessão é fechada no final se deu certo ou errado, evitando deixar as conexões abertas
+
+def buscar_produto():
+    session = SessionLocal()
+    # Criando a conexão/sessão com o banco de dados
+    service = ProdutoService()
+    # Criando o serviço para aplicar a regras de negocio
+
+    try:
+        id = int(input("Código do produto: "))
+        # Input para pegar o id do produto para buscar
+        produto = service.buscar_produto(session, id)
+        # Buscando o produto e aplicando a regra
+
+        print(f"\nCódigo     : {produto.id}")
+        print(f"Descritivo : {produto.descritivo}")
+        print(f"Qunatidade : {produto.quantidade}")
+        print(f"Preço      : R$ {produto.preco:.2f}\n")
+        # Exibindo as informações do produto
+
+    except ValueError as erro:
+        print(erro)
+        # Retorna a mensagem de erro caso alguma das operações não seja concluida corretamente
+
+    finally:
+        session.close()
+        # Garante que a sessão é fechada no final se deu certo ou errado, evitando deixar as conexões abertas
+
+def alterar_produto():
+    session = SessionLocal()
+    service = ProdutoService()
+
+    try:
+        id = int(input("Código do produto: "))
+        produto = service.buscar_produto(session, id)
+
+        descritvo = input("Nova descrição (Enter para manter): ")
+        quantidade = input("Nova descrição (Enter para manter): ")
+        preco = input("Nova descrição (Enter para manter): ")
+
+        produto = service.atualizar_produto(
+            session,
+            id,
+            descritivo = descritvo or None,
+            quantidade = int(quantidade) if quantidade else None,
+            preco = float(preco) if preco else None
+        )
+
+        print(f"\nProduto '{produto.descritivo}' atualizado com sucesso.")
+
+    except ValueError as erro:
+        print(erro)
+
+    finally:
+        session.close()
+
+def deletar_produto():
+    session = SessionLocal()
+    service = ProdutoService()
+
+    try:
+        id = input("Código do produto: ")
+        produto = service.buscar_produto(session,id)
+        service.deletar_produto(service, id)
+
+        print(f"\nProduto: {produto.descritivo} deletado com sucesso")
 
     except ValueError as erro:
         print(erro)
