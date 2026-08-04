@@ -16,7 +16,10 @@ src/controle_estoque/models/categoria.py
 src/controle_estoque/models/movimentacao.py
 src/controle_estoque/models/produto.py
 src/controle_estoque/models/usuario.py
+src/controle_estoque/repositories/categoria_repository.py
 src/controle_estoque/repositories/produto_repository.py
 src/controle_estoque/repositories/usuario_repository.py
+src/controle_estoque/services/categoria_services.py
 src/controle_estoque/services/produto_services.py
+src/controle_estoque/services/usuario_services.py
 tests/teste_banco.py

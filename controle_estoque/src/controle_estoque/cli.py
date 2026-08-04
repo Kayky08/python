@@ -345,8 +345,8 @@ def alterar_produto():
         produto = service.buscar_produto(session, id)
 
         descritivo = input("Nova descrição (Enter para manter): ")
-        quantidade = input("Nova descrição (Enter para manter): ")
-        preco = input("Nova descrição (Enter para manter): ")
+        quantidade = input("Nova quantidade (Enter para manter): ")
+        preco = input("Novo preço (Enter para manter): ")
 
         produto = service.atualizar_produto(
             session,
@@ -369,9 +369,9 @@ def deletar_produto():
     service = ProdutoService()
 
     try:
-        id = input("Código do produto: ")
+        id = int(input("Código do produto: "))
         produto = service.buscar_produto(session,id)
-        service.deletar_produto(service, id)
+        service.deletar_produto(session, id)
 
         print(f"\nProduto: {produto.descritivo} deletado com sucesso")
 
