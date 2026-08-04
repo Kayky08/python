@@ -13,7 +13,7 @@ class CategoriaRepository:
     def buscar_por_id(self, session) -> Categoria | None:
         return session.get(Categoria,id)
 
-    def listar(self, session, id) -> list[Categoria]:
+    def listar(self, session) -> list[Categoria]:
         return session.scalars(select(Categoria)).all()
 
     def atualizar(self, session, categoria: Categoria) -> Categoria:

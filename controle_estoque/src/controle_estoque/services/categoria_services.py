@@ -17,7 +17,7 @@ class CategoriaService:
         return self.repository.criar(session, categoria)
 
     def listar_categoria(self, session):
-        categorias = self.repository.listar()
+        categorias = self.repository.listar(session)
 
         if len(categorias) == 0:
             raise ValueError("Nenhuma categoria cadastrada.")

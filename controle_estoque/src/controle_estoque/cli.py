@@ -2,6 +2,7 @@ from controle_estoque.database import SessionLocal
 from controle_estoque.services.usuario_services import UsuarioService
 from controle_estoque.services.produto_services import ProdutoService
 from controle_estoque.services.categoria_services import CategoriaService
+import sys
 
 def iniciar():
     while True:
@@ -21,7 +22,7 @@ def iniciar():
             interface_produto()
 
         elif opcao == "3":
-            print("Buscar um Produto...")
+            interface_categoria()
 
         elif opcao == "4":
             print("Alterar um Produto...")
@@ -99,6 +100,39 @@ def interface_usuario():
         else:
             print("Opção inválida.")
 
+def interface_categoria():
+    while True:
+        print("\n=== Categoria ===")
+        print("1 - Cadastrar categoria")
+        print("2 - Listar categoria")
+        print("3 - Buscar um categoria")
+        print("4 - Alterar categoria")
+        print("5 - Deletar um categoria")
+        print("6 - Sair")
+
+        opcao = input("\nEscolha: ")
+
+        if opcao == "1":
+            cadastrar_categoria()
+
+        elif opcao == "2":
+            listar_categoria()
+
+        elif opcao == "3":
+            buscar_categoria()
+
+        elif opcao == "4":
+            alterar_categoria()
+
+        elif opcao == "5":
+            deletar_categoria()
+        
+        elif opcao == "6":
+            iniciar()
+
+        else:
+            print("Opção inválida.")
+
 #----------------------------------- Usuarios -----------------------------------
 def listar_usuarios():
     session = SessionLocal()
@@ -129,6 +163,7 @@ def cadastrar_categoria():
         descritivo = input("Descrição: ")
 
         categoria = service.cadastrar_categoria(
+            session,
             descritivo
         )
 
@@ -143,7 +178,10 @@ def listar_categoria():
     service = CategoriaService()
 
     try:
-        categorias = service.listar_categoria()
+        categorias = service.listar_categoria(session)
+
+        print(categorias)
+        sys.exit()
 
         print("\n========= CATEGORIA =========")
         for categoria in categorias:

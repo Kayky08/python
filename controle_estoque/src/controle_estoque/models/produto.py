@@ -25,7 +25,7 @@ class Produto(Base):
     descritivo:   Mapped[str]   = mapped_column(String(100), nullable = False) # Definindo um limite de 100 caracteres e que o valor não pode ser vazio
     quantidade:   Mapped[int]   = mapped_column(nullable = False)              # Definindo que o valor não pode ser vazio
     preco:        Mapped[float] = mapped_column(nullable = False)              # Definindo que o valor não pode ser vazio
-    categoria_id: Mapped[int]   = mapped_column(ForeignKey("categoria.id"))    # Definindo a categoria que o produto pertence, atraves do "id" da tabela de categorias
+    categoria_id: Mapped[int]   = mapped_column(ForeignKey("categorias.id"))    # Definindo a categoria que o produto pertence, atraves do "id" da tabela de categorias
 
     categoria: Mapped[Categoria] = relationship(
         back_populates="produtos"
