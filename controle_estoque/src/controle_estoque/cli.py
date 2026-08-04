@@ -122,20 +122,98 @@ def listar_usuarios():
 
 #----------------------------------- Categoria -----------------------------------
 def cadastrar_categoria():
-    sessiom = SessionLocal()
+    session = SessionLocal()
     service = CategoriaService()
 
+    try:
+        descritivo = input("Descrição: ")
+
+        categoria = service.cadastrar_categoria(
+            descritivo
+        )
+
+        print(f"\nCategoria '{categoria.descritivo}' cadastrada com o código {categoria.id} ")
+    except ValueError as erro:
+        print(erro)
+    finally:
+        session.close()
+
 def listar_categoria():
-    pass
+    session = SessionLocal()
+    service = CategoriaService()
+
+    try:
+        categorias = service.listar_categoria()
+
+        print("\n========= CATEGORIA =========")
+        for categoria in categorias:
+            print(f"Código     : {categoria.id}")
+            print(f"Descritivo : {categoria.descritivo}")
+
+    except ValueError as erro:
+        print(erro)
+
+    finally:
+        session.close()
 
 def buscar_categoria():
-    pass
+    session = SessionLocal()
+    service = CategoriaService()
+
+    try:
+        id = int(input("Código da cateogria: "))
+
+        categoria = service.buscar_categoria(session, id)
+
+        print(f"Código     : {categoria.id}")
+        print(f"Descritivo : {categoria.descritivo}")
+
+    except ValueError as erro:
+        print(erro)
+    finally:
+        session.close()
 
 def alterar_categoria():
-    pass
+    session = SessionLocal()
+    service = CategoriaService()
+
+    try:
+        id = int(input("Código da categoria: "))
+        categoria = service.buscar_categoria(session, id)
+
+        descritivo = input("Nova descrição (Enter para manter): ")
+
+        categoria = service.atualizar_categoria(
+            session,
+            id,
+            descritivo = descritivo or None
+        )
+
+        print(f"\nCategoria '{categoria.descritivo}' atualizado com sucesso.")
+
+    except ValueError as erro:
+        print(erro)
+
+    finally:
+        session.close()
 
 def deletar_categoria():
-    pass
+    session = SessionLocal()
+    service = CategoriaService()
+
+    try:
+        id = int(input("Código da categoria: "))
+        categoria = service.buscar_categoria(session,id)
+
+        service.deletar_categoria(session,id)
+
+        print(f"\nCategoria '{categoria.descritivo}' deletado com sucesso.")
+
+    except ValueError as erro:
+        print(erro)
+
+    finally:
+        session.close()
 
 #----------------------------------- Produtos -----------------------------------
 def cadastrar_produto():
@@ -231,14 +309,14 @@ def alterar_produto():
         id = int(input("Código do produto: "))
         produto = service.buscar_produto(session, id)
 
-        descritvo = input("Nova descrição (Enter para manter): ")
+        descritivo = input("Nova descrição (Enter para manter): ")
         quantidade = input("Nova descrição (Enter para manter): ")
         preco = input("Nova descrição (Enter para manter): ")
 
         produto = service.atualizar_produto(
             session,
             id,
-            descritivo = descritvo or None,
+            descritivo = descritivo or None,
             quantidade = int(quantidade) if quantidade else None,
             preco = float(preco) if preco else None
         )
