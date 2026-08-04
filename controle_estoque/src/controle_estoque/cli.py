@@ -180,9 +180,6 @@ def listar_categoria():
     try:
         categorias = service.listar_categoria(session)
 
-        print(categorias)
-        sys.exit()
-
         print("\n========= CATEGORIA =========")
         for categoria in categorias:
             print(f"Código     : {categoria.id}")

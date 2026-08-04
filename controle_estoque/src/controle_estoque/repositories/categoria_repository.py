@@ -10,7 +10,7 @@ class CategoriaRepository:
 
         return categoria
 
-    def buscar_por_id(self, session) -> Categoria | None:
+    def buscar_por_id(self, session, id) -> Categoria | None:
         return session.get(Categoria,id)
 
     def listar(self, session) -> list[Categoria]:

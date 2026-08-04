@@ -7,9 +7,15 @@ class CategoriaService:
         self.repository = CategoriaRepository()
 
     def cadastrar_categoria(self, session, descritivo):
+        categorias = self.repository.listar(session)
+
         if descritivo is None:
             raise ValueError("O Descritivo não pode ser um campo vazio.")
 
+        for categoria in categorias:
+            if categoria.descritivo == descritivo:
+                raise ValueError(f"Ja existe uma categoria cadastrada com esse descritivo, ela possui o id: {categoria.id}")        
+        
         categoria = Categoria(
             descritivo = descritivo
         )
@@ -21,6 +27,8 @@ class CategoriaService:
 
         if len(categorias) == 0:
             raise ValueError("Nenhuma categoria cadastrada.")
+
+        return categorias
 
     def buscar_categoria(self, session, id):
         categoria = self.repository.buscar_por_id(session,id)
