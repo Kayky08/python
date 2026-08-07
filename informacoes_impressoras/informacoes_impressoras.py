@@ -33,7 +33,6 @@ def pegar_informacoes(ips):
             # Pega todos os IPs que deram erro de comunicação
             if error_indication:
                 print(f"{ip} -> {error_indication}")
-                sys.exit()
                 erros_comunicacao.append(ip)
                 continue
 
@@ -62,7 +61,7 @@ def pegar_informacoes(ips):
     return impressoras, erros_comunicacao, erros_status
 
 # lista de IPs de todas as impressoras
-"""
+
 ips = [
     "192.168.8.109",
     "192.168.8.246",
@@ -99,11 +98,10 @@ ips = [
     "192.168.40.32",
     "192.168.40.30"
 ]
-"""
 
-ips = [
-    "192.168.8.230"
-]
+# ips = [
+#     "192.168.8.230"
+# ]
 
 # Criação da tabela do excel 
 wb = Workbook()
