@@ -1,8 +1,17 @@
+from datetime import datetime
 import pdfplumber
 import pandas as pd
+import re
+import os
 import sys
 
-def normalizar_numero(valor_str):
+MESES = {
+    1: "janeiro", 2: "fevereiro", 3: "marco", 4: "abril",
+    5: "maio", 6: "junho", 7: "julho", 8: "agosto",
+    9: "setembro", 10: "outubro", 11: "novembro", 12: "dezembro"
+}
+
+def formatar_valor(valor_str):
     valor_str = valor_str.strip()
     
     # Remove separador de milhar (ponto)
@@ -19,16 +28,22 @@ def normalizar_numero(valor_str):
     return int(numero_float)  # trunca a parte decimal e vira inteiro
 
 def lista_para_df(dados):
+    # Pega o arquivo e transforma em um Dataframe
     df = pd.DataFrame(dados)
 
-    df["cont_antigo"] = df["cont_antigo"].apply(normalizar_numero)
-    df["cont_atual"]  = df["cont_atual"].apply(normalizar_numero)
+    # Aplica a formatação de string para inteiros
+    df["cont_antigo"] = df["cont_antigo"].apply(formatar_valor)
+    df["cont_atual"]  = df["cont_atual"].apply(formatar_valor)
 
+    # Retorna o DataFrame atualizado
     return df
 
 def status(row):
+    # Utiliza o pandas para verificar se falta alguma das informações nas colunas
     if pd.isna(row["cont_atual_arquivo1"]) or pd.isna(row["cont_atual_arquivo2"]):
         return "Serial ausente em um dos arquivos"
+
+    # Verifica se ouve alguma diferença de valor
     if row["diferenca"] == 0:
         return "Sem alteração"
 
@@ -102,23 +117,81 @@ def pdf_para_linhas_array(caminho_pdf):
     return resultado
 
 def comparacoes_impressoras(arquivo1,arquivo2):
+    # Pegando os dados de cada arquivo
     dados1 = pdf_para_linhas_array(arquivo1)
     dados2 = pdf_para_linhas_array(arquivo2)
 
+    # Trasformando os arquivos em DF
     df1 = lista_para_df(dados1)
     df2 = lista_para_df(dados2)
 
+    # Utilizando o merge para unir e comparar os DF
     comparacao = pd.merge(
-        df1[["serial", "modelo", "cont_atual"]],
-        df2[["serial", "cont_atual"]],
-        on="serial",
-        how="outer",
-        suffixes=("_arquivo1", "_arquivo2")
+        df1[["serial", "modelo", "cont_atual"]], # Definindo os dois DF que serão comparados
+        df2[["serial", "modelo", "cont_atual"]],
+        on="serial", # Definindo o valor que vai conectar os dois DF
+        how="outer", # Defnindo o tipo de retorno (inner: se tem nas duas, left: se tem apenas na da esquerda, right: se tem na da direita, outer: retorna de ambos, mesmo com o valor vazio)
+        suffixes=("_arquivo1", "_arquivo2") # Sufixo para definir de qual arquivo veio cada informação
     )
 
+    # Campo que vai mostrar a diferença entre os dois valores
     comparacao["diferenca"] = comparacao["cont_atual_arquivo2"] - comparacao["cont_atual_arquivo1"]
+    # Compo que vai definir o status de cada item
     comparacao["status"] = comparacao.apply(status, axis=1)
 
+    # Transformando em excel as informações
     comparacao.to_excel("comparacao_contadores.xlsx", index=False)
+
+def ler_ate_primeira_data(caminho_pdf):
+    padrao_data = re.compile(r"\d{2}/\d{2}/\d{4}")
+    resultado = []
+    data_encontrada = None
+
+    with pdfplumber.open(caminho_pdf) as pdf:
+        for page in pdf.pages:
+            texto = page.extract_text(layout=True)
+            if not texto:
+                continue
+
+            for linha in texto.split("\n"):
+                elementos = linha.split()
+                resultado.append(elementos)
+
+                for item in elementos:
+                    busca = padrao_data.search(item)
+                    if busca:
+                        data_encontrada = busca.group()
+                        break
+
+                if data_encontrada:
+                    break
+            if data_encontrada:
+                break
+
+    return resultado, data_encontrada
+
+def nome_arquivo_por_data(data_str, caminho_arquivo):
+    data = datetime.strptime(data_str, "%d/%m/%Y")
+    mes_nome = MESES[data.month]
+    nome_novo = f"{mes_nome}_{data.year}.pdf"
+
+    os.rename(caminho_arquivo, nome_novo)
+
+def buscar_todos_pdf(caminho_pasta):
+    arquivos_pdf = []
+
+    for arquivo in os.listdir(caminho_pasta):
+        if arquivo.endswith('.pdf'):
+            arquivos_pdf.append(arquivo)
+
+    return arquivos_pdf
+
+arquivos = buscar_todos_pdf("./")
+print(arquivos)
+
+# arquivos = []
+# arquivo = "NF F73854 LOCA IMPR 16_884_99 VENC 05_06 - EXTRATO.PDF"
+# linhas, data = ler_ate_primeira_data(arquivo)
+# nome_saida = nome_arquivo_por_data(data, arquivo)
 
 #comparacoes_impressoras("arquivo1.pdf","arquivo2.pdf")
