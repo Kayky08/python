@@ -11,11 +11,12 @@ MESES = {
     9: "setembro", 10: "outubro", 11: "novembro", 12: "dezembro"
 }
 
+# --------------------------- Utilitarios --------------------------- 
+
 def formatar_valor(valor_str):
     valor_str = valor_str.strip()
-    
-    # Remove separador de milhar (ponto)
-    # e troca separador decimal (vírgula) por ponto
+
+    # Remove separador de milhar (ponto) e troca separador decimal (vírgula) por ponto
     if "," in valor_str:
         # tem parte decimal -> remove pontos de milhar, troca vírgula por ponto
         valor_limpo = valor_str.replace(".", "").replace(",", ".")
@@ -24,8 +25,9 @@ def formatar_valor(valor_str):
         # não tem vírgula -> só remove pontos de milhar
         valor_limpo = valor_str.replace(".", "")
         numero_float = float(valor_limpo)
-    
-    return int(numero_float)  # trunca a parte decimal e vira inteiro
+
+    # trunca a parte decimal e vira inteiro
+    return int(numero_float)
 
 def lista_para_df(dados):
     # Pega o arquivo e transforma em um Dataframe
@@ -39,13 +41,96 @@ def lista_para_df(dados):
     return df
 
 def status(row):
-    # Utiliza o pandas para verificar se falta alguma das informações nas colunas
+    # Utiliza o pandas.isna() para verificar se falta alguma das informações nas colunas
     if pd.isna(row["cont_atual_arquivo1"]) or pd.isna(row["cont_atual_arquivo2"]):
         return "Serial ausente em um dos arquivos"
 
     # Verifica se ouve alguma diferença de valor
     if row["diferenca"] == 0:
         return "Sem alteração"
+
+def ler_ate_primeira_data(caminho_pdf):
+    # Define o padrão da data
+    padrao_data = re.compile(r"\d{2}/\d{2}/\d{4}")
+    data_encontrada = None
+
+    # Utiliza o pdfplumber para ler o PDD
+    with pdfplumber.open(caminho_pdf) as pdf:
+        # Faz a leitura de cada pagina
+        for page in pdf.pages:
+            # Extrai o texto de cada pagina
+            texto = page.extract_text(layout=True)
+            if not texto:
+                continue
+
+            # Verifica cada linha
+            for linha in texto.split("\n"):
+                # Transforma cada linha em um array
+                elementos = linha.split()
+
+                # Verifica cada palavra de cada linha
+                for item in elementos:
+                    # Busca por uma data
+                    busca = padrao_data.search(item)
+
+                    # Se encontra ele retorna com a data e para o codigo
+                    if busca:
+                        data_encontrada = busca.group()
+                        break
+
+                if data_encontrada:
+                    break
+            if data_encontrada:
+                break
+
+    # Retorna com o valor da data
+    return data_encontrada
+
+def nome_arquivo_por_data(data_str):
+    # Transforma a data recebida em texto
+    data = datetime.strptime(data_str, "%d/%m/%Y")
+    # Pega o nome do mês
+    mes_nome = MESES[data.month]
+
+    # retorna com o nome formatado
+    return f"{mes_nome}_{data.year}.pdf"
+
+def buscar_todos_pdf(caminho_pasta):
+    arquivos_pdf = []
+
+    # Busca no caminho_pasta cada PDF existente
+    for arquivo in os.listdir(caminho_pasta):
+        # Tranforma o arquivo em minusculo e verifica se termina com a extensção ".pdf"
+        if arquivo.lower().endswith('.pdf'):
+            # Adiciona na lista todos os PDFs encontrados
+            arquivos_pdf.append(os.path.join(caminho_pasta,arquivo))
+
+    # Retorna com a lista de PDFs
+    return arquivos_pdf
+
+def padronizar_nomes(caminho_pasta):
+    # Busca todos os PDFs do caminho
+    arquivos = buscar_todos_pdf(caminho_pasta)
+
+    # Entra em cada arquivo
+    for caminho_arquivo in arquivos:
+        # Busca a primeira data de cada arquivo
+        data = ler_ate_primeira_data(caminho_arquivo)
+
+        # Retorno caso não encontre uma data
+        if not data:
+            print(f"Nenhuma data encontrada: {caminho_arquivo}")
+            continue
+
+        # Pega como vai ficar o novo nome do arquivo
+        novo_nome = nome_arquivo_por_data(data)
+        # Pega o caminho e o novo nome
+        novo_caminho = os.path.join(caminho_pasta,novo_nome)
+
+        # Renomeia e salva o arquivo novamente
+        os.rename(caminho_arquivo, novo_caminho)
+
+# --------------------------- Funções Principais --------------------------- 
 
 def pdf_para_linhas_array(caminho_pdf):
     # Variavel com os tipos da impressora  
@@ -116,7 +201,7 @@ def pdf_para_linhas_array(caminho_pdf):
     
     return resultado
 
-def comparacoes_impressoras(arquivo1,arquivo2):
+def comparacoes_pdfs(arquivo1,arquivo2):
     # Pegando os dados de cada arquivo
     dados1 = pdf_para_linhas_array(arquivo1)
     dados2 = pdf_para_linhas_array(arquivo2)
@@ -139,59 +224,55 @@ def comparacoes_impressoras(arquivo1,arquivo2):
     # Compo que vai definir o status de cada item
     comparacao["status"] = comparacao.apply(status, axis=1)
 
+    comparacao = comparacao.sort_values(by=["modelo_arquivo1", "serial"])
+
     # Transformando em excel as informações
-    comparacao.to_excel("comparacao_contadores.xlsx", index=False)
+    return comparacao
 
-def ler_ate_primeira_data(caminho_pdf):
-    padrao_data = re.compile(r"\d{2}/\d{2}/\d{4}")
-    resultado = []
-    data_encontrada = None
+def ordenar_arquivos_por_mes(caminho_pasta):
+    # Buscando todos os arquivos dentro da pasta
+    arquivos = buscar_todos_pdf(caminho_pasta)
 
-    with pdfplumber.open(caminho_pdf) as pdf:
-        for page in pdf.pages:
-            texto = page.extract_text(layout=True)
-            if not texto:
-                continue
+    # Extraindo os (numeros_do_mes, caminho) de cada arquivo, usando o nome ja padronizado
+    ordem_mes = {v: k for k, v in MESES.items()}
+    arquivos_com_mes = []
 
-            for linha in texto.split("\n"):
-                elementos = linha.split()
-                resultado.append(elementos)
+    for caminho in arquivos:
+        nome = os.path.splitext(os.path.basename(caminho))[0]
+        mes_nome = nome.split("_")[0].lower()
 
-                for item in elementos:
-                    busca = padrao_data.search(item)
-                    if busca:
-                        data_encontrada = busca.group()
-                        break
+        if mes_nome in ordem_mes:
+            arquivos_com_mes.append((ordem_mes[mes_nome], caminho))
 
-                if data_encontrada:
-                    break
-            if data_encontrada:
-                break
+    arquivos_com_mes.sort()
+    return [caminho for _, caminho in arquivos_com_mes]
 
-    return resultado, data_encontrada
+def comparar_meses_consecutivos(caminho_pasta):
+    arquivos_ordenados = ordenar_arquivos_por_mes(caminho_pasta)
 
-def nome_arquivo_por_data(data_str, caminho_arquivo):
-    data = datetime.strptime(data_str, "%d/%m/%Y")
-    mes_nome = MESES[data.month]
-    nome_novo = f"{mes_nome}_{data.year}.pdf"
+    for arquivo_anterior, arquivo_atual in zip(arquivos_ordenados, arquivos_ordenados[1:]):
+        comparacoes_pdfs(arquivo_anterior, arquivo_atual)
 
-    os.rename(caminho_arquivo, nome_novo)
+def gerar_excel_comparacoes(caminho_pasta, caminho_saida="comparacoes.xlsx"):
+    arquivos_ordenados = ordenar_arquivos_por_mes(caminho_pasta)
 
-def buscar_todos_pdf(caminho_pasta):
-    arquivos_pdf = []
+    with pd.ExcelWriter(caminho_saida, engine="openpyxl") as writer:
+        for arquivo_anterior, arquivo_atual in zip(arquivos_ordenados, arquivos_ordenados[1:]):
+            
+            nome_mes_anterior = os.path.splitext(os.path.basename(arquivo_anterior))[0]
+            nome_mes_atual = os.path.splitext(os.path.basename(arquivo_atual))[0]
+            nome_aba = f"{nome_mes_anterior}_vs_{nome_mes_atual}"[:31]
 
-    for arquivo in os.listdir(caminho_pasta):
-        if arquivo.endswith('.pdf'):
-            arquivos_pdf.append(arquivo)
+            comparacao_df = comparacoes_pdfs(arquivo_anterior, arquivo_atual)
+            comparacao_df.to_excel(writer, sheet_name=nome_aba, index=False)
 
-    return arquivos_pdf
+    print(f"Arquivo gerado: {caminho_saida}")
 
-arquivos = buscar_todos_pdf("./")
-print(arquivos)
+# --------------------------- Interface --------------------------- 
 
-# arquivos = []
-# arquivo = "NF F73854 LOCA IMPR 16_884_99 VENC 05_06 - EXTRATO.PDF"
-# linhas, data = ler_ate_primeira_data(arquivo)
-# nome_saida = nome_arquivo_por_data(data, arquivo)
+print("----------- Comparador de Contadores -----------\n")
 
-#comparacoes_impressoras("arquivo1.pdf","arquivo2.pdf")
+caminho = input("Digite o caminho da pasta: ")
+
+padronizar_nomes(caminho)
+gerar_excel_comparacoes(caminho,"comparacoes.xlsx")
