@@ -151,20 +151,26 @@ def pdf_para_linhas_array(caminho_pdf):
             
             # Acessando cada linha
             for num_linha, linha in enumerate(texto.split("\n"), start=1):
-                elementos = linha.split()  # separa por espaços (qualquer quantidade)
-                
-                if elementos and elementos[0] in conteudo:  # ignora linhas vazias
+                # Separa por espaços (qualquer quantidade)
+                elementos = linha.split()
+
+                # Ignora linhas vazias
+                if elementos and elementos[0] in conteudo:
                     item = None
 
-                    # Separando o serial do modelo
+                    # Separando o serial do modelo e organiza o dicionario
                     if "4062" in elementos[3]:
+                        # Pegando o elemento que esta grudado
                         grudado = elementos[3]
 
+                        # Separando ele em cada parte
                         parte1 = grudado[0:10]
                         parte2 = grudado[10:]
 
+                        # Adicionar os elementos alterados no array de elementos
                         elementos_alterados = elementos[:2] + [parte1,parte2] + elementos[4:]
 
+                        # Organizando o dicionarios
                         item = {
                             "modelo":elementos_alterados[2],
                             "serial":elementos_alterados[3],
@@ -172,6 +178,7 @@ def pdf_para_linhas_array(caminho_pdf):
                             "cont_atual":elementos_alterados[10]
                         }
 
+                    # Buscando as linhas que possue as impressoras e organiznado os elementos em um dicionario
                     elif elementos[3] == "SL-M4080FX":
                         item = {
                             "modelo":elementos[3],
@@ -196,9 +203,11 @@ def pdf_para_linhas_array(caminho_pdf):
                             "cont_atual":elementos[5]
                         }
 
+                    # Adicionando o item ao resultado
                     if item:
                         resultado.append(item)
-    
+
+    # Retornando com as informações de cada impressora
     return resultado
 
 def comparacoes_pdfs(arquivo1,arquivo2):
@@ -224,9 +233,10 @@ def comparacoes_pdfs(arquivo1,arquivo2):
     # Compo que vai definir o status de cada item
     comparacao["status"] = comparacao.apply(status, axis=1)
 
+    # Organiza a planilha com base nos modelos do arquivo 1
     comparacao = comparacao.sort_values(by=["modelo_arquivo1", "serial"])
 
-    # Transformando em excel as informações
+    # Retornando a comparação em DF
     return comparacao
 
 def ordenar_arquivos_por_mes(caminho_pasta):
@@ -237,35 +247,43 @@ def ordenar_arquivos_por_mes(caminho_pasta):
     ordem_mes = {v: k for k, v in MESES.items()}
     arquivos_com_mes = []
 
+    # Entrando em cada caminho
     for caminho in arquivos:
+        # Pegando o nome de cada arquivo
         nome = os.path.splitext(os.path.basename(caminho))[0]
+        # Pegando somente a parte do mês
         mes_nome = nome.split("_")[0].lower()
 
+        # Pegando cada mes e ordenando com base no nome
         if mes_nome in ordem_mes:
             arquivos_com_mes.append((ordem_mes[mes_nome], caminho))
 
+    # Organizando em ordem
     arquivos_com_mes.sort()
+    # 
     return [caminho for _, caminho in arquivos_com_mes]
 
-def comparar_meses_consecutivos(caminho_pasta):
-    arquivos_ordenados = ordenar_arquivos_por_mes(caminho_pasta)
-
-    for arquivo_anterior, arquivo_atual in zip(arquivos_ordenados, arquivos_ordenados[1:]):
-        comparacoes_pdfs(arquivo_anterior, arquivo_atual)
-
 def gerar_excel_comparacoes(caminho_pasta, caminho_saida="comparacoes.xlsx"):
+    # Pega os arquivos ordenados
     arquivos_ordenados = ordenar_arquivos_por_mes(caminho_pasta)
 
+    # Utiliza o ExcelWriter para criar o arquivo xlsx
     with pd.ExcelWriter(caminho_saida, engine="openpyxl") as writer:
         for arquivo_anterior, arquivo_atual in zip(arquivos_ordenados, arquivos_ordenados[1:]):
-            
+
+            # Pega o nome do mes anterior
             nome_mes_anterior = os.path.splitext(os.path.basename(arquivo_anterior))[0]
+            # Pega o nome do mes atual
             nome_mes_atual = os.path.splitext(os.path.basename(arquivo_atual))[0]
+            # Cria o nome da aba mesclando os dois nomes, (tem esse limite de 31, por conta da quantidade de caracteres que o excel aceita)
             nome_aba = f"{nome_mes_anterior}_vs_{nome_mes_atual}"[:31]
 
+            # Faz a Comparação entre os PDFs e gera o DF
             comparacao_df = comparacoes_pdfs(arquivo_anterior, arquivo_atual)
+            # Transforma o DF em uma aba do excel
             comparacao_df.to_excel(writer, sheet_name=nome_aba, index=False)
 
+    # Retorna com o nome do arquivo gerado
     print(f"Arquivo gerado: {caminho_saida}")
 
 # --------------------------- Interface --------------------------- 
