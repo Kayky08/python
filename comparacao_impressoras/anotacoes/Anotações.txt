@@ -1,0 +1,49 @@
+Elaboração do Script para a comparação das impressoras
+
+- a diferença de quanto imprimiu cada impressora por mês de cada setor
+- desde o começo do ano
+- ja tenho um código q pega atualmente
+- criar algo q le os arquivos PDF pegando o a coluna atu.pb
+- nisso comparar com o mês seguinte pegando a diferença de cada mês
+
+----------------------------------------------------------------------------
+
+Números
+-posição PB = l[variavel] p[63~64]
+-posição COR = l[variavel] p[79]
+
+Palavras
+-posição Modelo Coloridas - l[variável] p[31]
+-posição Modelo PB - l[variável] p[29]
+-posição Serial
+   4080 - p[40]
+   4062 - p[31]
+   zt   - p[27]
+   zd   - p[34]
+
+Backup 2:
+pg[1] l[32]
+pg[2] l[31]
+
+----------------------------------------------------------------------------
+
+- pegar informações sobre os contadores e seriais de dois arquivos
+- fazer a subtração entre esses contadores retornando a diferença
+- colocar isso em um arquivo q mostra dependendo do mês
+
+----------------------------------------------------------------------------
+
+- Verificar se da pra pegar linha por linha transformando em um array e separando por split cada elemento
+- Verificando como são as linhas
+MULTIFUNCIONAL P/B SAMSUNG SL-M4080FX   088WBQBH6000QJW 418.485 418.820 335 0,08418 0,00000 0      0      0 0,00000 0,00000 0 0 0 0,00000 0,00000
+MULTIFUNCIONAL COLOR SAMSUNG SLC-4062FX 0CAHBJEJA0004PJ 0       0       0   0,00000 0,00000 70.003 70.003 0 0,78915 0,00000 0 0 0 0,00000 0,00000
+IMPRESSORA TERMICA ZD220 203DPI         D5J243203755    0       0       0   0,00000 0,00000 0      0      0 0,00000 0,00000 0 0 0 0,00000 0,00000
+IMPRESSORA TERMICA ZT230                52J171601201    0       0       0   0,00000 0,00000 0      0      0 0,00000 0,00000 0 0 0 0,00000 0,00000
+
+----------------------------------------------------------------------------
+
+- Verificar todos os arquivos PDF da pasta
+- Renomear os arquivos para o padrão "mes_ano.pdf" que ele pertence
+- Verificar a quantidade de meses (ex: jan~out, mar~dez, etc...)
+- Comparar com o mês anterior
+- Criar uma aba da planilha com o nome dos meses q estão sendo comparados
